@@ -98,19 +98,21 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
 ///     core::arch::asm!(
 ///         // Preserve the task local storage (TLS) fields and exception return value.
 ///         "ldr   r0, ={tls_mem_addr}",
-///         "ldmia r0, {{r1-r3}}",
+///         "ldmia r0!, {{r1-r3}}",
 ///         "push  {{r1-r3, lr}}",
 ///         // Set the kernel stacklet boundary and clear out other fields in the TLS.
+///         "ldr   r0, ={tls_mem_addr}",
 ///         "ldr   r1, ={cont_stk_boundary}",
-///         "mov   r2, #0",
-///         "strd  r1, r2, [r0]",
+///         "movs  r2, #0",
+///         "str   r1, [r0]",
+///         "str   r2, [r0, #4]",
 ///         "str   r2, [r0, #8]",
 ///         // Run the IRQ handler.
 ///         "bl    {handler_trampoline}",
 ///         // Restore the TLS fields and exception return value.
 ///         "pop   {{r1-r3}}",
 ///         "ldr   r0, ={tls_mem_addr}",
-///         "stmia r0, {{r1-r3}}",
+///         "stmia r0!, {{r1-r3}}",
 ///         // Exception return.
 ///         "pop   {{pc}}",
 ///         tls_mem_addr = const hopter::config::__TLS_MEM_ADDR,
@@ -150,17 +152,19 @@ pub fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         unsafe extern \"C\" fn __hopter_{}_entry() {{\n\
             core::arch::asm!(\n\
                 \"ldr   r0, ={{tls_mem_addr}}\",\n\
-                \"ldmia r0, {{{{r1-r3}}}}\",\n\
+                \"ldmia r0!, {{{{r1-r3}}}}\",\n\
                 \"push  {{{{r1-r3, lr}}}}\",\n\
+                \"ldr   r0, ={{tls_mem_addr}}\",\n\
                 \"ldr   r1, ={{cont_stk_boundary}}\",\n\
-                \"mov   r2, #0\",\n\
-                \"strd  r1, r2, [r0]\",\n\
+                \"movs  r2, #0\",\n\
+                \"str   r1, [r0]\",\n\
+                \"str   r2, [r0, #4]\",\n\
                 \"str   r2, [r0, #8]\",\n\
                 // Run the IRQ handler.\n\
                 \"bl    {{handler_trampoline}}\",\n\
                 \"pop   {{{{r1-r3}}}}\",\n\
                 \"ldr   r0, ={{tls_mem_addr}}\",\n\
-                \"stmia r0, {{{{r1-r3}}}}\",\n\
+                \"stmia r0!, {{{{r1-r3}}}}\",\n\
                 // Exception return.\n\
                 \"pop   {{{{pc}}}}\",\n\
                 tls_mem_addr = const hopter::config::__TLS_MEM_ADDR,\n\
@@ -322,6 +326,25 @@ fn parse_attribute_arg_to_irq(attr_args: &[NestedMeta]) -> String {
     feature = "stm32f429",
     feature = "stm32f446",
     feature = "stm32f469",
+    feature = "stm32f030",
+    feature = "stm32f030x4",
+    feature = "stm32f030x6",
+    feature = "stm32f030x8",
+    feature = "stm32f030xc",
+    feature = "stm32f031",
+    feature = "stm32f038",
+    feature = "stm32f042",
+    feature = "stm32f048",
+    feature = "stm32f051",
+    feature = "stm32f058",
+    feature = "stm32f070",
+    feature = "stm32f070x6",
+    feature = "stm32f070xb",
+    feature = "stm32f071",
+    feature = "stm32f072",
+    feature = "stm32f078",
+    feature = "stm32f091",
+    feature = "stm32f098",
 )))]
 const SUPPORTED_IRQS: [&str; 0] = [];
 
@@ -1225,4 +1248,146 @@ const SUPPORTED_IRQS: [&str; 93] = [
     "DMA2D",
     "QUADSPI",
     "DSIHOST",
+];
+
+#[cfg(any(feature = "stm32f030", feature = "stm32f070"))]
+const SUPPORTED_IRQS: [&str; 28] = [
+    "WWDG",
+    "PVD",
+    "RTC",
+    "FLASH",
+    "RCC",
+    "EXTI0_1",
+    "EXTI2_3",
+    "EXTI4_15",
+    "DMA1_CH1",
+    "DMA1_CH2_3",
+    "DMA1_CH4_5",
+    "ADC",
+    "TIM1_BRK_UP_TRG_COM",
+    "TIM1_CC",
+    "TIM3",
+    "TIM6",
+    "TIM14",
+    "TIM15",
+    "TIM16",
+    "TIM17",
+    "I2C1",
+    "I2C2",
+    "SPI1",
+    "SPI2",
+    "USART1",
+    "USART2",
+    "USART3_4_5_6",
+    "USB",
+];
+
+#[cfg(any(feature = "stm32f031", feature = "stm32f051",
+          feature = "stm32f071", feature = "stm32f091"))]
+const SUPPORTED_IRQS: [&str; 32] = [
+    "WWDG",
+    "PVD",
+    "RTC",
+    "FLASH",
+    "RCC_CRS",
+    "EXTI0_1",
+    "EXTI2_3",
+    "EXTI4_15",
+    "TSC",
+    "DMA1_CH1",
+    "DMA1_CH2_3_DMA2_CH1_2",
+    "DMA1_CH4_5_6_7_DMA2_CH3_4_5",
+    "ADC_COMP",
+    "TIM1_BRK_UP_TRG_COM",
+    "TIM1_CC",
+    "TIM2",
+    "TIM3",
+    "TIM6_DAC",
+    "TIM7",
+    "TIM14",
+    "TIM15",
+    "TIM16",
+    "TIM17",
+    "I2C1",
+    "I2C2",
+    "SPI1",
+    "SPI2",
+    "USART1",
+    "USART2",
+    "USART3_4_5_6_7_8",
+    "CEC_CAN",
+    "USB",
+];
+
+#[cfg(any(feature = "stm32f042", feature = "stm32f072"))]
+const SUPPORTED_IRQS: [&str; 32] = [
+    "WWDG",
+    "PVD",
+    "RTC",
+    "FLASH",
+    "RCC_CRS",
+    "EXTI0_1",
+    "EXTI2_3",
+    "EXTI4_15",
+    "TSC",
+    "DMA1_CH1",
+    "DMA1_CH2_3",
+    "DMA1_CH4_5_6_7",
+    "ADC_COMP",
+    "TIM1_BRK_UP_TRG_COM",
+    "TIM1_CC",
+    "TIM2",
+    "TIM3",
+    "TIM6_DAC",
+    "TIM7",
+    "TIM14",
+    "TIM15",
+    "TIM16",
+    "TIM17",
+    "I2C1",
+    "I2C2",
+    "SPI1",
+    "SPI2",
+    "USART1",
+    "USART2",
+    "USART3_4",
+    "CEC_CAN",
+    "USB",
+];
+
+#[cfg(any(feature = "stm32f038", feature = "stm32f048", feature = "stm32f058",
+          feature = "stm32f078", feature = "stm32f098"))]
+const SUPPORTED_IRQS: [&str; 32] = [
+    "WWDG",
+    "PVD",
+    "RTC",
+    "FLASH",
+    "RCC_CRS",
+    "EXTI0_1",
+    "EXTI2_3",
+    "EXTI4_15",
+    "TSC",
+    "DMA1_CH1",
+    "DMA1_CH2_3_DMA2_CH1_2",
+    "DMA1_CH4_5_6_7_DMA2_CH3_4_5",
+    "ADC_COMP",
+    "TIM1_BRK_UP_TRG_COM",
+    "TIM1_CC",
+    "TIM2",
+    "TIM3",
+    "TIM6_DAC",
+    "TIM7",
+    "TIM14",
+    "TIM15",
+    "TIM16",
+    "TIM17",
+    "I2C1",
+    "I2C2",
+    "SPI1",
+    "SPI2",
+    "USART1",
+    "USART2",
+    "USART3_4_5_6_7_8",
+    "CEC_CAN",
+    "USB",
 ];

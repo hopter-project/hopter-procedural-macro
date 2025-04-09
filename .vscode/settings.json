@@ -1,0 +1,8 @@
+{
+    "rust-analyzer.check.features": [
+        "stm32f407"
+    ],
+    "rust-analyzer.cargo.features": [
+        "stm32f407"
+    ],
+}

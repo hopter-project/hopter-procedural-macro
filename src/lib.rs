@@ -259,7 +259,7 @@ pub fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///     hopter::unwind::unwind::set_isr_unwinding(prev_is_handler_unwinding);
 /// }
 /// ```
-#[cfg(feature = "armv7em")]
+#[cfg(not(feature = "armv6m"))]
 #[proc_macro_attribute]
 pub fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     // Parse the `item` TokenStream into a Rust function.

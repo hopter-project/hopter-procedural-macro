@@ -1,6 +1,6 @@
 [package]
 name = "hopter_proc_macro"
-version = "0.2.3"
+version = "0.3.0"
 edition = "2021"
 license = "MIT"
 description = "Procedural macro implementation for Hopter embedded operating system."
